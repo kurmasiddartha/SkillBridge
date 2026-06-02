@@ -301,4 +301,3 @@ This keeps the feature usable even if the AI API is unavailable.
 - Double completion is prevented by checking session status.
 
 This design prevents unfair point transfer if a session is rejected, cancelled, or never completed.
-

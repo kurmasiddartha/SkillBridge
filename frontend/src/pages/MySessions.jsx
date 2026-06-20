@@ -65,7 +65,7 @@ const MySessions = () => {
                 {canCancel(session.status) && (
                   <button className="button secondary" onClick={() => cancelSession(session._id)}>Cancel Session</button>
                 )}
-                {session.status === "COMPLETED" && (
+                {session.status === "COMPLETED" && !session.isReviewed && (
                   <button className="button" onClick={() => setReviewSession(session)}>Add Review</button>
                 )}
               </div>
@@ -80,6 +80,7 @@ const MySessions = () => {
             onSuccess={(successMessage) => {
               setMessage(successMessage);
               setError("");
+              loadSessions();
             }}
             onError={(errorMessage) => {
               setError(errorMessage);

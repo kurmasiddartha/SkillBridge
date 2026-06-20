@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import MentorProfile from "../models/MentorProfile.js";
 import Session from "../models/Session.js";
 import User from "../models/User.js";
+import Review from "../models/Review.js";
 
 const userFields = "name email branch year skillsKnown skillPoints isMentor";
 
@@ -90,10 +91,19 @@ export const getMySessions = async (req, res) => {
       Session.find({ learnerId: req.user._id }).sort({ createdAt: -1 })
     );
 
+    const reviews = await Review.find({ learnerId: req.user._id }).select("sessionId");
+    const reviewedSessionIds = new Set(reviews.map((r) => r.sessionId.toString()));
+
+    const sessionsWithReviewFlag = sessions.map((session) => {
+      const sessionObj = session.toObject();
+      sessionObj.isReviewed = reviewedSessionIds.has(session._id.toString());
+      return sessionObj;
+    });
+
     res.status(200).json({
       success: true,
       count: sessions.length,
-      sessions
+      sessions: sessionsWithReviewFlag
     });
   } catch (error) {
     res.status(500).json({

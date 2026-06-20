@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Footer = () => {
+  const { user } = useAuth();
+
   return (
     <footer className="footer">
       <div className="footer-inner">
@@ -11,8 +14,12 @@ const Footer = () => {
         <div className="footer-links">
           <Link to="/mentors">Find Mentors</Link>
           <Link to="/ai">AI Suggestions</Link>
-          <Link to="/login">Login</Link>
-          <Link to="/register">Register</Link>
+          {!user && (
+            <>
+              <Link to="/login">Login</Link>
+              <Link to="/register">Register</Link>
+            </>
+          )}
         </div>
       </div>
       <div className="footer-bottom">

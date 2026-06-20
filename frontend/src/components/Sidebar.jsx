@@ -7,11 +7,17 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <NavLink to="/dashboard">Overview</NavLink>
-      <NavLink to="/mentor-dashboard">Mentor Dashboard</NavLink>
       <NavLink to="/mentors">Find Mentors</NavLink>
       <NavLink to="/sessions">My Sessions</NavLink>
-      <NavLink to="/mentor-requests">Mentor Requests</NavLink>
-      <NavLink to="/mentor-profile">Become Mentor</NavLink>
+      {user?.isMentor ? (
+        <>
+          <NavLink to="/mentor-dashboard">Mentor Dashboard</NavLink>
+          <NavLink to="/mentor-requests">Mentor Requests</NavLink>
+          <NavLink to="/mentor-profile">Edit Mentor Profile</NavLink>
+        </>
+      ) : (
+        <NavLink to="/mentor-profile">Become Mentor</NavLink>
+      )}
       <NavLink to="/ai">AI Suggestions</NavLink>
       {user?.role === "ADMIN" && (
         <>

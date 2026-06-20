@@ -341,7 +341,7 @@ Format:
           Authorization: `Bearer ${HF_API_KEY}`,
           "Content-Type": "application/json"
         },
-        timeout: 30000
+        timeout: 8000
       }
     );
 

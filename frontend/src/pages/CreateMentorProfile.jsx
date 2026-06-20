@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
@@ -18,6 +18,35 @@ const CreateMentorProfile = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data } = await api.get("/mentors/my-profile");
+        if (data.mentorProfile) {
+          const profile = data.mentorProfile;
+          setForm({
+            bio: profile.bio || "",
+            skills: profile.skills ? profile.skills.join(", ") : "",
+            experienceLevel: profile.experienceLevel || "Beginner",
+            mode: profile.mode || "Online",
+            location: profile.location || "",
+            day: profile.availableSlots?.[0]?.day || "",
+            startTime: profile.availableSlots?.[0]?.startTime || "",
+            endTime: profile.availableSlots?.[0]?.endTime || ""
+          });
+          setIsEdit(true);
+          setIsVerified(profile.isVerified);
+        }
+      } catch (err) {
+        // If 404, it means no profile exists yet, which is expected for new mentors
+        setIsEdit(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -30,19 +59,26 @@ const CreateMentorProfile = () => {
         ? [{ day: form.day, startTime: form.startTime, endTime: form.endTime }]
         : [];
 
-      await api.post("/mentors/profile", {
+      const payload = {
         bio: form.bio,
         skills: form.skills.split(",").map((skill) => skill.trim()).filter(Boolean),
         experienceLevel: form.experienceLevel,
         mode: form.mode,
         location: form.location,
         availableSlots
-      });
+      };
 
-      await fetchCurrentUser();
-      setMessage("Mentor profile created successfully. Your profile is pending admin verification.");
+      if (isEdit) {
+        await api.put("/mentors/profile", payload);
+        setMessage("Mentor profile updated successfully.");
+      } else {
+        await api.post("/mentors/profile", payload);
+        await fetchCurrentUser();
+        setIsEdit(true);
+        setMessage("Mentor profile created successfully. Your profile is pending admin verification.");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Could not create mentor profile");
+      setError(err.response?.data?.message || "Could not save mentor profile");
     } finally {
       setLoading(false);
     }
@@ -53,10 +89,17 @@ const CreateMentorProfile = () => {
       <Sidebar />
       <section className="content">
         <div className="page-header">
-          <h1>Create Mentor Profile</h1>
-          <p>Describe what you can teach and when students can reach you.</p>
+          <h1>{isEdit ? "Edit Mentor Profile" : "Create Mentor Profile"}</h1>
+          <p>{isEdit ? "Update your tutoring details and slot availability." : "Describe what you can teach and when students can reach you."}</p>
         </div>
         <form className="panel mentor-form" onSubmit={handleSubmit}>
+          {isEdit && (
+            <p className={`alert ${isVerified ? "success" : "warning"}`} style={{ marginBottom: "1rem" }}>
+              {isVerified
+                ? "✓ Your profile is verified and active on the platform."
+                : "ℹ Your profile is currently pending admin verification."}
+            </p>
+          )}
           {message && <p className="alert success">{message}</p>}
           {error && <p className="alert error">{error}</p>}
           <div className="field">
@@ -104,7 +147,9 @@ const CreateMentorProfile = () => {
               <input type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} />
             </div>
           </div>
-          <button className="button" type="submit" disabled={loading}>{loading ? "Submitting..." : "Create Mentor Profile"}</button>
+          <button className="button" type="submit" disabled={loading}>
+            {loading ? "Submitting..." : (isEdit ? "Update Mentor Profile" : "Create Mentor Profile")}
+          </button>
         </form>
       </section>
     </main>

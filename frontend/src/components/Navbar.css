@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #dfe1e6;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* Atlassian style brand logo */
+.navbar .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #0052cc;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+
+.navbar .brand::before {
+  content: "SB";
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0052cc 0%, #00c6ff 100%);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.navbar .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.navbar .nav-links a {
+  color: #42526e;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.navbar .nav-links a:hover,
+.navbar .nav-links a.active {
+  color: #0052cc;
+  background-color: #f4f5f7;
+}
+
+/* Logout Button */
+.navbar .link-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #42526e;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.navbar .link-button:hover {
+  color: #c92a2a;
+  background-color: #ffe3e3;
+}
+
+/* Special Login Link & Register Button */
+.navbar .nav-links a.login-link {
+  color: #42526e;
+}
+
+.navbar .nav-links a.login-link:hover {
+  color: #0052cc;
+  background: transparent;
+  text-decoration: underline;
+}
+
+.navbar .nav-links a.register-btn {
+  background-color: #0052cc;
+  color: #ffffff;
+  padding: 0.6rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0, 82, 204, 0.15);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.navbar .nav-links a.register-btn:hover {
+  background-color: #0747a6;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.navbar .nav-links a.register-btn:active {
+  transform: translateY(1px);
+}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import AddReviewModal from "../components/AddReviewModal";
 import Sidebar from "../components/Sidebar";
+import "./MySessions.css";
 
 const statusClass = (status) => `status-badge ${status.toLowerCase()}`;
 
@@ -40,7 +41,7 @@ const MySessions = () => {
   const canCancel = (status) => status === "PENDING" || status === "ACCEPTED";
 
   return (
-    <main className="layout">
+    <main className="layout my-sessions-page">
       <Sidebar />
       <section className="content">
         <div className="page-header">

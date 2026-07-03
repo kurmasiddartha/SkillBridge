@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import "./Footer.css";
 
 const Footer = () => {
   const { user } = useAuth();

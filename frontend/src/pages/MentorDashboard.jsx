@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import api from "../api/axios";
 import Sidebar from "../components/Sidebar";
 
 const MentorDashboard = () => {
+  const navigate = useNavigate();
   const [dashboard, setDashboard] = useState(null);
   const [error, setError] = useState("");
 
@@ -58,7 +60,12 @@ const MentorDashboard = () => {
           </section>
 
           <section className="panel">
-            <h2>Mentor Profile</h2>
+            <div className="section-heading">
+              <h2>Mentor Profile</h2>
+              <button className="button secondary" style={{ fontSize: "0.82rem", padding: "0.3rem 0.75rem" }} onClick={() => navigate("/mentor-profile")}>
+                ✏️ Edit Profile
+              </button>
+            </div>
             <p>{dashboard?.mentorProfile?.bio || "No mentor bio available."}</p>
             <div className="tag-row">
               {dashboard?.mentorProfile?.skills?.map((skill) => <span className="tag" key={skill}>{skill}</span>)}

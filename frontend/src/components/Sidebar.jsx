@@ -9,14 +9,11 @@ const Sidebar = () => {
       <NavLink to="/dashboard">Overview</NavLink>
       <NavLink to="/mentors">Find Mentors</NavLink>
       <NavLink to="/sessions">My Sessions</NavLink>
-      {user?.isMentor ? (
+      {user?.isMentor && (
         <>
           <NavLink to="/mentor-dashboard">Mentor Dashboard</NavLink>
           <NavLink to="/mentor-requests">Mentor Requests</NavLink>
-          <NavLink to="/mentor-profile">Edit Mentor Profile</NavLink>
         </>
-      ) : (
-        <NavLink to="/mentor-profile">Become Mentor</NavLink>
       )}
       <NavLink to="/ai">AI Suggestions</NavLink>
       {user?.role === "ADMIN" && (

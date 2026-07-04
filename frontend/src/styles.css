@@ -672,9 +672,20 @@ textarea {
 
 .profile-panel {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 18px;
 }
+
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-email {
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
 
 .profile-list,
 .tag-row {

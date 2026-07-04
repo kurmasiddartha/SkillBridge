@@ -1,6 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "./Navbar.css";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -24,8 +23,8 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <NavLink to="/login" className="login-link">Login</NavLink>
-            <NavLink to="/register" className="register-btn">Register</NavLink>
+            <NavLink to="/login">Login</NavLink>
+            <NavLink to="/register">Register</NavLink>
           </>
         )}
       </nav>

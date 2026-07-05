@@ -133,6 +133,38 @@ export const extractSkillsRuleBased = (goalText) => {
     addUniqueSkills(skills, ["Java"]);
   }
 
+  // System Design
+  if (text.includes("system design") || text.includes("architecture") || hasKeyword(text, "hld") || hasKeyword(text, "lld") || hasKeyword(text, "scalability")) {
+    addUniqueSkills(skills, ["System Design", "Architecture"]);
+  }
+
+  // Data Science / ML — must come BEFORE DSA check to prevent "data structures" matching "data"
+  if (
+    text.includes("data science") ||
+    text.includes("machine learning") ||
+    text.includes("deep learning") ||
+    text.includes("neural network") ||
+    text.includes("natural language") ||
+    hasKeyword(text, "ml") ||
+    hasKeyword(text, "dl") ||
+    hasKeyword(text, "nlp") ||
+    hasKeyword(text, "tensorflow") ||
+    hasKeyword(text, "pytorch") ||
+    hasKeyword(text, "pandas") ||
+    hasKeyword(text, "numpy") ||
+    hasKeyword(text, "sklearn") ||
+    hasKeyword(text, "matplotlib") ||
+    (hasKeyword(text, "ai") && !text.includes("ai suggestions"))
+  ) {
+    addUniqueSkills(skills, ["Data Science", "Machine Learning", "Python"]);
+  }
+
+  if (text.includes("java full stack") || hasKeyword(text, "spring boot") || hasKeyword(text, "spring") || text.includes("rest api")) {
+    addUniqueSkills(skills, ["Java", "Spring Boot", "REST API", "Database", "Full Stack Development"]);
+  } else if (hasKeyword(text, "java") || text.includes("core java")) {
+    addUniqueSkills(skills, ["Java"]);
+  }
+
   if (hasKeyword(text, "dp") || text.includes("dynamic programming") || hasKeyword(text, "memoization") || hasKeyword(text, "tabulation")) {
     addUniqueSkills(skills, ["Dynamic Programming"]);
   }
@@ -193,7 +225,7 @@ export const extractSkillsRuleBased = (goalText) => {
     addUniqueSkills(skills, ["Git", "GitHub"]);
   }
 
-  return skills.length ? skills : defaultSkills;
+  return skills;
 };
 
 export const generateFallbackLearningPath = (extractedSkills) => {
@@ -212,6 +244,16 @@ export const generateFallbackLearningPath = (extractedSkills) => {
     ];
   }
 
+  if (has("Data Science") || has("Machine Learning")) {
+    return [
+      "Day 1: Set up Python environment; learn NumPy and Pandas basics with a dataset.",
+      "Day 2: Learn data cleaning, EDA, and visualization with Matplotlib and Seaborn.",
+      "Day 3: Understand supervised learning — linear regression, logistic regression, decision trees.",
+      "Day 4: Practice model evaluation (accuracy, precision, recall) and try scikit-learn pipelines.",
+      "Day 5: Build a small end-to-end ML project and review findings with a mentor."
+    ];
+  }
+
   if (has("MongoDB") && has("Express.js") && has("React.js") && has("Node.js")) {
     return [
       "Day 1: Learn MongoDB basics, collections, schemas, and CRUD operations.",
@@ -219,6 +261,26 @@ export const generateFallbackLearningPath = (extractedSkills) => {
       "Day 3: Learn React components, props, state, forms, and routing.",
       "Day 4: Connect React with Express APIs and add JWT authentication.",
       "Day 5: Build a small MERN feature and review it with a mentor."
+    ];
+  }
+
+  if (has("DSA") || has("Data Structures") || has("Algorithms")) {
+    if (has("Dynamic Programming")) {
+      return [
+        "Day 1: Revise recursion fundamentals and practice simple recursive problems.",
+        "Day 2: Learn memoization (top-down DP) and solve 3 basic DP problems.",
+        "Day 3: Practice 1D DP patterns — climbing stairs, house robber, coin change.",
+        "Day 4: Practice 2D DP — grid paths, longest common subsequence, 0/1 knapsack.",
+        "Day 5: Take a timed DP mock test and review weak areas with a mentor."
+      ];
+    }
+
+    return [
+      "Day 1: Revise arrays, strings, and basic time/space complexity (Big-O).",
+      "Day 2: Practice linked lists, stacks, and queues with 5 problems each.",
+      "Day 3: Study trees (binary trees, BST) and practice traversals + problems.",
+      "Day 4: Study sorting algorithms, binary search, and two-pointer techniques.",
+      "Day 5: Attempt a mixed placement-style DSA mock test and discuss with a mentor."
     ];
   }
 
@@ -333,7 +395,7 @@ Format:
             content: prompt
           }
         ],
-        max_tokens: 700,
+        max_tokens: 800,
         temperature: 0.2
       },
       {
@@ -341,7 +403,7 @@ Format:
           Authorization: `Bearer ${HF_API_KEY}`,
           "Content-Type": "application/json"
         },
-        timeout: 8000
+        timeout: 40000
       }
     );
 

@@ -5,95 +5,101 @@ import {
   generateAIEnhancedPath
 } from "../services/huggingFaceService.js";
 
+import { allSkillGroups as skillAliasGroups } from "../config/skills.js";
+
 const userFields = "name email branch year skillsKnown";
 
-const skillAliasMap = {
-  mongodb: ["mongodb", "mongo"],
-  mongo: ["mongodb", "mongo"],
-  expressjs: ["expressjs", "express", "express.js"],
-  express: ["expressjs", "express", "express.js"],
-  reactjs: ["reactjs", "react", "react.js"],
-  react: ["reactjs", "react", "react.js"],
-  nodejs: ["nodejs", "node", "node.js"],
-  node: ["nodejs", "node", "node.js"],
-  dynamicprogramming: ["dynamicprogramming", "dp"],
-  dp: ["dynamicprogramming", "dp"],
-  recursion: ["recursion", "recursive"],
-  dsa: ["dsa", "datastructures", "algorithms", "problemsolving"],
-  datastructures: ["dsa", "datastructures", "algorithms"],
-  operatingsystem: ["operatingsystem", "operatingsystems", "os"],
-  os: ["operatingsystem", "operatingsystems", "os"],
-  dbms: ["dbms", "database", "sql"],
-  computernetworks: ["computernetworks", "cn", "networking"],
-  cn: ["computernetworks", "cn", "networking"],
-  csfundamentals: ["csfundamentals", "operatingsystem", "dbms", "computernetworks", "os", "cn"],
-  springboot: ["springboot", "spring"],
-  restapi: ["restapi", "api"],
-  fullstackdevelopment: ["fullstackdevelopment", "fullstack", "mern", "javafullstack"],
-  englishspeaking: ["englishspeaking", "english", "communication", "fluency"],
-  communicationskills: ["communicationskills", "communication", "speaking"],
-  interviewpreparation: ["interviewpreparation", "interview", "mockinterview"],
-  hrinterview: ["hrinterview", "hr"],
-  placementpreparation: ["placementpreparation", "placement", "placements"]
-};
-
-const normalizeSkill = (skill) => {
-  return String(skill || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-};
-
-const expandSkill = (skill) => {
-  const normalizedSkill = normalizeSkill(skill);
-  return skillAliasMap[normalizedSkill] || [normalizedSkill];
-};
-
-const calculateMatchScore = (mentorSkills, extractedSkills) => {
-  const mentorAliases = mentorSkills.flatMap(expandSkill);
-  const extractedAliases = extractedSkills.flatMap(expandSkill);
-  let score = 0;
-
-  extractedAliases.forEach((skill) => {
-    if (mentorAliases.includes(skill)) {
-      score += 2;
-      return;
+/** Build lookup: normalizedSkill → Set<string> of all aliases in its group */
+const buildAliasLookup = () => {
+  const lookup = new Map();
+  for (const group of skillAliasGroups) {
+    const groupSet = new Set(group);
+    for (const alias of group) {
+      lookup.set(alias, groupSet);
     }
+  }
+  return lookup;
+};
 
-    if (mentorAliases.some((mentorSkill) => mentorSkill.includes(skill) || skill.includes(mentorSkill))) {
-      score += 1;
+const aliasLookup = buildAliasLookup();
+
+/** Strip everything except lowercase a-z and 0-9 */
+const normalizeSkill = (skill) =>
+  String(skill || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** Get the alias Set for a skill; falls back to a singleton of itself */
+const getAliasSet = (skill) => {
+  const n = normalizeSkill(skill);
+  return aliasLookup.get(n) || new Set([n]);
+};
+
+/**
+ * Build a Set of ALL normalized aliases for all extracted skills.
+ * This is the "query fingerprint" we compare against mentor skills.
+ */
+const buildQueryAliasUnion = (extractedSkills) => {
+  const union = new Set();
+  for (const skill of extractedSkills) {
+    for (const alias of getAliasSet(skill)) {
+      union.add(alias);
     }
-  });
+    // Also add the raw normalized skill so direct string matches work
+    union.add(normalizeSkill(skill));
+  }
+  return union;
+};
 
-  return score;
+/**
+ * Score a mentor against the query alias union.
+ * Each distinct matched skill group contributes 1 point.
+ * Returns 0 if no match — those mentors are excluded.
+ */
+const scoreMentor = (mentorSkills, queryAliasUnion) => {
+  if (!mentorSkills?.length) return 0;
+
+  // Track which query-skill groups have already been counted
+  // to avoid double-scoring the same group twice
+  const matchedQueryGroups = new Set();
+
+  for (const mentorSkill of mentorSkills) {
+    const mNorm = normalizeSkill(mentorSkill);
+    // Direct hit against any alias in the query union
+    if (queryAliasUnion.has(mNorm)) {
+      // Find which query group this belongs to and mark it
+      const group = aliasLookup.get(mNorm);
+      const groupKey = group ? [...group].sort().join("|") : mNorm;
+      if (!matchedQueryGroups.has(groupKey)) {
+        matchedQueryGroups.add(groupKey);
+      }
+    }
+  }
+
+  return matchedQueryGroups.size;
 };
 
 const findMatchingMentors = async (extractedSkills) => {
+  // Fetch ALL verified mentors — filtering is done in JS for flexibility
   const mentors = await MentorProfile.find({ isVerified: true })
     .populate("userId", userFields)
-    .sort({ rating: -1, totalReviews: -1, createdAt: -1 });
+    .sort({ rating: -1, totalReviews: -1, createdAt: -1 })
+    .lean();
 
-  return mentors
-    .map((mentor) => {
-      const mentorObject = mentor.toObject();
-      const matchScore = calculateMatchScore(mentor.skills || [], extractedSkills);
+  const queryAliasUnion = buildQueryAliasUnion(extractedSkills);
 
-      return {
-        ...mentorObject,
-        matchScore,
-        skillMatchCount: matchScore
-      };
-    })
-    .filter((mentor) => mentor.matchScore > 0)
+  const scored = mentors
+    .map((mentor) => ({
+      ...mentor,
+      matchScore: scoreMentor(mentor.skills || [], queryAliasUnion),
+      skillMatchCount: scoreMentor(mentor.skills || [], queryAliasUnion)
+    }))
+    .filter((m) => m.matchScore > 0)
     .sort((a, b) => {
-      if (b.matchScore !== a.matchScore) {
-        return b.matchScore - a.matchScore;
-      }
-
-      if ((b.rating || 0) !== (a.rating || 0)) {
-        return (b.rating || 0) - (a.rating || 0);
-      }
-
+      if (b.matchScore !== a.matchScore) return b.matchScore - a.matchScore;
+      if ((b.rating || 0) !== (a.rating || 0)) return (b.rating || 0) - (a.rating || 0);
       return (b.totalReviews || 0) - (a.totalReviews || 0);
-    })
-    .slice(0, 5);
+    });
+
+  return scored.slice(0, 5);
 };
 
 export const recommendMentors = async (req, res) => {

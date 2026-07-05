@@ -117,3 +117,46 @@ export const getMe = async (req, res) => {
     });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const allowedFields = ["name", "branch", "year", "skillsKnown", "skillsWanted"];
+    const updates = {};
+
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    });
+
+    if (!Object.keys(updates).length) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid fields provided to update"
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      updates,
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: formatUser(user)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Could not update profile",
+      error: error.message
+    });
+  }
+};
+

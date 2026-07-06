@@ -97,7 +97,7 @@ const CreateMentorProfile = () => {
             <p className={`alert ${isVerified ? "success" : "warning"}`} style={{ marginBottom: "1rem" }}>
               {isVerified
                 ? "✓ Your profile is verified and active on the platform."
-                : "ℹ Your profile is currently pending admin verification."}
+                : "⏳ Your profile is currently pending admin verification."}
             </p>
           )}
           {message && <p className="alert success">{message}</p>}

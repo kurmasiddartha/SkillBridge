@@ -10,7 +10,7 @@ const initialForm = {
   message: ""
 };
 
-const BookSession = ({ mentorProfileId, onClose, onBooked }) => {
+const BookSession = ({ mentorProfileId, mentorSkills = [], onClose, onBooked }) => {
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,6 +19,15 @@ const BookSession = ({ mentorProfileId, onClose, onBooked }) => {
     event.preventDefault();
     setError("");
     setLoading(true);
+
+    // Validate skill against mentor's known skills (case‑insensitive)
+    const requestedSkill = form.skill.trim().toLowerCase();
+    const allowedSkills = mentorSkills.map((s) => s.trim().toLowerCase());
+    if (!allowedSkills.includes(requestedSkill)) {
+      setError("The requested skill does not match any of the mentor's known skills");
+      setLoading(false);
+      return;
+    }
 
     try {
       await api.post("/sessions/book", {

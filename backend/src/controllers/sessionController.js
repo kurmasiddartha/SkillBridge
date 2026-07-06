@@ -25,6 +25,13 @@ export const bookSession = async (req, res) => {
       });
     }
 
+    if (req.user.role === "ADMIN") {
+      return res.status(403).json({
+        success: false,
+        message: "Admins cannot book sessions"
+      });
+    }
+
     const mentorProfile = await MentorProfile.findById(mentorProfileId);
 
     if (!mentorProfile) {
@@ -38,6 +45,15 @@ export const bookSession = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "You can only book verified mentors"
+      });
+    }
+
+    const requestedSkill = skill.toLowerCase().trim();
+    const mentorSkills = mentorProfile.skills.map((s) => s.toLowerCase().trim());
+    if (!mentorSkills.includes(requestedSkill)) {
+      return res.status(400).json({
+        success: false,
+        message: "The requested skill does not match any of the mentor's known skills"
       });
     }
 

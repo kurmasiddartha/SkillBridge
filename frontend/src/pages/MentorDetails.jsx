@@ -3,9 +3,11 @@ import { useParams } from "react-router-dom";
 import api from "../api/axios";
 import BookSession from "../components/BookSession";
 import Sidebar from "../components/Sidebar";
+import { useAuth } from "../context/AuthContext";
 
 const MentorDetails = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const [mentor, setMentor] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [message, setMessage] = useState("");
@@ -38,7 +40,11 @@ const MentorDetails = () => {
             <h1>{mentor?.userId?.name || "Mentor Details"}</h1>
             <p>{mentor?.userId?.branch || "Branch not added"} {mentor?.userId?.year ? `| Year ${mentor.userId.year}` : ""}</p>
           </div>
-          <button className="button" onClick={() => setBookingOpen(true)}>Book Session</button>
+          {user?.role === "ADMIN" ? null : mentor?.userId?._id?.toString() !== user?._id?.toString() ? (
+            <button className="button" onClick={() => setBookingOpen(true)}>Book Session</button>
+          ) : (
+            <button className="button secondary" disabled>Your Profile</button>
+          )}
         </div>
         {message && <p className="alert success">{message}</p>}
         {error && <p className="alert error">{error}</p>}
@@ -88,8 +94,9 @@ const MentorDetails = () => {
         {bookingOpen && (
           <BookSession
             mentorProfileId={id}
+            mentorSkills={mentor?.skills || []}
             onClose={() => setBookingOpen(false)}
-            onBooked={(successMessage) => setMessage(successMessage)}
+            onBooked={(msg) => setMessage(msg)}
           />
         )}
       </section>

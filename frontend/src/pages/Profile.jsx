@@ -117,7 +117,7 @@ const Profile = () => {
                   <span><strong>Year:</strong> {user?.year || "Not added"}</span>
                   <span><strong>Skill Points:</strong> {user?.skillPoints}</span>
                   <span><strong>Role:</strong> {user?.role}</span>
-                  {user?.isMentor && (
+                  {user?.isMentor && mentorProfile?.isVerified && (
                     <span className="tag" style={{ background: "var(--primary)", color: "#fff", padding: "0.2rem 0.6rem", borderRadius: "999px", fontSize: "0.78rem" }}>
                       Mentor
                     </span>
@@ -129,11 +129,11 @@ const Profile = () => {
                   </button>
                   {user?.isMentor ? (
                     <button className="button secondary" onClick={() => navigate("/mentor-profile")}>
-                      🎓 Edit Mentor Profile
+                      🎓 {mentorProfile ? "Edit Mentor Profile" : "Create Mentor Profile"}
                     </button>
                   ) : user?.role !== "ADMIN" ? (
                     <button className="button secondary" onClick={() => navigate("/mentor-profile")}>
-                      🎓 Become Mentor
+                      🎓 Create Mentor Profile
                     </button>
                   ) : null}
                 </div>
@@ -163,9 +163,9 @@ const Profile = () => {
               <div className="panel">
                 <div className="section-heading">
                   <h2>Mentor Profile</h2>
-                  {mentorProfile?.isVerified
+                  {mentorProfile && (mentorProfile.isVerified
                     ? <span className="tag" style={{ background: "#16a34a", color: "#fff" }}>✓ Verified</span>
-                    : <span className="tag" style={{ background: "#d97706", color: "#fff" }}>⏳ Pending</span>}
+                    : <span className="tag" style={{ background: "#d97706", color: "#fff" }}>⏳ Pending</span>)}
                 </div>
                 {loadingMentor ? (
                   <p>Loading mentor profile...</p>

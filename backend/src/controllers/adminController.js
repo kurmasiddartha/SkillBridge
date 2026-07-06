@@ -140,11 +140,7 @@ export const verifyMentor = async (req, res) => {
 
 export const rejectMentor = async (req, res) => {
   try {
-    const mentor = await MentorProfile.findByIdAndUpdate(
-      req.params.id,
-      { isVerified: false },
-      { new: true, runValidators: true }
-    ).populate("userId", mentorPopulateFields);
+    const mentor = await MentorProfile.findById(req.params.id).populate("userId", mentorPopulateFields);
 
     if (!mentor) {
       return res.status(404).json({
@@ -153,10 +149,15 @@ export const rejectMentor = async (req, res) => {
       });
     }
 
+    // Reset the user's isMentor flag so they can re-apply if needed
+    await User.findByIdAndUpdate(mentor.userId._id, { isMentor: false });
+
+    // Delete the mentor profile entirely
+    await MentorProfile.findByIdAndDelete(req.params.id);
+
     res.status(200).json({
       success: true,
-      message: "Mentor profile rejected successfully",
-      mentor
+      message: "Mentor profile rejected and removed successfully"
     });
   } catch (error) {
     res.status(500).json({

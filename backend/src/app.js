@@ -10,7 +10,14 @@ import sessionRoutes from "./routes/sessionRoutes.js";
 
 const app = express();
 
-app.use(cors());
+// Configure CORS for deployment
+app.use(cors({
+  origin: function (origin, callback) {
+    callback(null, true);
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.get("/api/health", (req, res) => {
